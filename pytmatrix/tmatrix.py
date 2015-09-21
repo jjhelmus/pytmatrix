@@ -1,5 +1,6 @@
 """
-Copyright (C) 2009-2013 Jussi Leinonen
+Copyright (C) 2009-2015 Jussi Leinonen, Finnish Meteorological Institute, 
+California Institute of Technology
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -21,9 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import warnings
 import numpy as np
-from fortran_tm import pytmatrix
-from quadrature import quadrature
-import orientation
+from pytmatrix.fortran_tm import pytmatrix
+from pytmatrix.quadrature import quadrature
+import pytmatrix.orientation as orientation
+
 
 
 class Scatterer(object):
@@ -47,12 +49,20 @@ class Scatterer(object):
 
     Attributes: 
         radius: Equivalent radius.
-        rat: If rat==1 (default), axi is the equivalent volume radius.
+        radius_type: If radius_type==Scatterer.RADIUS_EQUAL_VOLUME (default),
+            radius is the equivalent volume radius.
+            If radius_type==Scatterer.RADIUS_MAXIMUM, radius is the maximum 
+            radius.
+            If radius_type==Scatterer.RADIUS_EQUAL_AREA, 
+            radius is the equivalent area radius.
         wavelength: The wavelength of incident light (same units as axi).
         m: The complex refractive index.
         axis_ratio: The horizontal-to-rotational axis ratio.
-        np: Particle shape. -1: spheroids; -2: cylinders; 
-            n > 0: nth degree Chebyshev particles (not fully supported).
+        shape: Particle shape. 
+            Scatterer.SHAPE_SPHEROID: spheroid
+            Scatterer.SHAPE_CYLINDER: cylinders; 
+            Scatterer.SHAPE_CHEBYSHEV: Chebyshev particles (not yet 
+                supported).
         alpha, beta: The Euler angles of the particle orientation (degrees).
         thet0, thet: The zenith angles of incident and scattered radiation 
             (degrees).
@@ -75,24 +85,35 @@ class Scatterer(object):
             effect if psd_integrator is None.
     """
 
-    _attr_list = set(["radius", "rat", "wavelength", "m", "axis_ratio", 
-        "np", "ddelt", "ndgs", "alpha", "beta", "thet0", "thet", 
-        "phi0", "phi", "Kw_sqr", "orient", "or_pdf", "n_alpha", "n_beta",
-        "psd_integrator", "psd"])
+    _attr_list = set(["radius", "radius_type", "wavelength", "m",
+        "axis_ratio", "shape", "np", "ddelt", "ndgs", "alpha",
+        "beta", "thet0", "thet", "phi0", "phi", "Kw_sqr", "orient",
+        "scatter", "or_pdf", "n_alpha", "n_beta", "psd_integrator",
+        "psd"])
 
     _deprecated_aliases = {"axi": "radius",
         "lam": "wavelength",
         "eps": "axis_ratio",
-        }
+        "rat": "radius_type",
+        "np": "shape",
+        "scatter": "orient"
+    }
 
+    RADIUS_EQUAL_VOLUME = 1.0
+    RADIUS_EQUAL_AREA = 0.0
+    RADIUS_MAXIMUM = 2.0
+
+    SHAPE_SPHEROID = -1
+    SHAPE_CYLINDER = -2
+    SHAPE_CHEBYSHEV = 1
 
     def __init__(self, **kwargs):
         self.radius = 1.0
-        self.rat = 1.0
+        self.radius_type = Scatterer.RADIUS_EQUAL_VOLUME
         self.wavelength = 1.0
         self.m = complex(2,0)
         self.axis_ratio = 1.0
-        self.np = -1
+        self.shape = Scatterer.SHAPE_SPHEROID
         self.ddelt = 1e-3
         self.ndgs = 2
         self.alpha = 0.0
@@ -181,11 +202,21 @@ class Scatterer(object):
     def _init_tmatrix(self):
         """Initialize the T-matrix.
         """
-        self.nmax = pytmatrix.calctmat(self.radius, self.rat, self.wavelength,
-            self.m.real, self.m.imag, self.axis_ratio, self.np, self.ddelt, 
-            self.ndgs)
-        self._tm_signature = (self.radius, self.rat, self.wavelength, self.m,
-            self.axis_ratio, self.np, self.ddelt, self.ndgs)        
+
+        if self.radius_type == Scatterer.RADIUS_MAXIMUM:
+            # Maximum radius is not directly supported in the original
+            # so we convert it to equal volume radius
+            radius_type = Scatterer.RADIUS_EQUAL_VOLUME
+            radius = self.equal_volume_from_maximum()
+        else:
+            radius_type = self.radius_type
+            radius = self.radius
+
+        self.nmax = pytmatrix.calctmat(radius, radius_type,
+            self.wavelength, self.m.real, self.m.imag, self.axis_ratio,
+            self.shape, self.ddelt, self.ndgs)
+        self._tm_signature = (self.radius, self.radius_type, self.wavelength,
+            self.m, self.axis_ratio, self.shape, self.ddelt, self.ndgs)        
 
 
     def _init_orient(self):
@@ -213,6 +244,22 @@ class Scatterer(object):
         self._psd_signature = (self.psd,)
 
 
+    def equal_volume_from_maximum(self):
+        if self.shape == Scatterer.SHAPE_SPHEROID:
+            if self.axis_ratio > 1.0: # oblate
+                r_eq = self.radius/self.axis_ratio**(1.0/3.0)
+            else: # prolate
+                r_eq = self.radius/self.axis_ratio**(2.0/3.0)
+        elif self.shape == Scatterer.SHAPE_CYLINDER:
+            if self.axis_ratio > 1.0: # oblate
+                r_eq = self.radius*(0.75/self.axis_ratio)**(1.0/3.0)
+            else: # prolate
+                r_eq = self.radius*(0.75/self.axis_ratio)**(2.0/3.0)
+        else:
+            raise AttributeError("Unsupported shape for maximum radius.")
+        return r_eq
+
+
     def get_SZ_single(self, alpha=None, beta=None):
         """Get the S and Z matrices for a single orientation.
         """
@@ -221,8 +268,8 @@ class Scatterer(object):
         if beta == None:
             beta = self.beta
 
-        tm_outdated = self._tm_signature != (self.radius, self.rat, 
-            self.wavelength, self.m, self.axis_ratio, self.np, self.ddelt, 
+        tm_outdated = self._tm_signature != (self.radius, self.radius_type, 
+            self.wavelength, self.m, self.axis_ratio, self.shape, self.ddelt, 
             self.ndgs)
         if tm_outdated:
             self._init_tmatrix()
@@ -245,8 +292,8 @@ class Scatterer(object):
         """Get the S and Z matrices using the specified orientation averaging.
         """
 
-        tm_outdated = self._tm_signature != (self.radius, self.rat, 
-            self.wavelength, self.m, self.axis_ratio, self.np, self.ddelt, 
+        tm_outdated = self._tm_signature != (self.radius, self.radius_type, 
+            self.wavelength, self.m, self.axis_ratio, self.shape, self.ddelt, 
             self.ndgs)
         scatter_outdated = self._scatter_signature != (self.thet0, self.thet, 
             self.phi0, self.phi, self.alpha, self.beta, self.orient)
@@ -292,6 +339,7 @@ class Scatterer(object):
 
     def get_Z(self):
         return self.get_SZ()[1]
+
 
 
 # Alias with a warning

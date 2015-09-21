@@ -1,5 +1,6 @@
 """
-Copyright (C) 2009-2013 Jussi Leinonen
+Copyright (C) 2009-2015 Jussi Leinonen, Finnish Meteorological Institute, 
+California Institute of Technology
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import numpy as np
-from scatter import ldr, ext_xsect
+from pytmatrix.scatter import ldr, ext_xsect
 
 
 def radar_xsect(scatterer, h_pol=True):
@@ -28,8 +29,8 @@ def radar_xsect(scatterer, h_pol=True):
 
     Args:
         scatterer: a Scatterer instance.
-        h_pol: If true (default), use horizontal polarization.
-        If false, use vertical polarization.
+        h_pol: If True (default), use horizontal polarization.
+        If False, use vertical polarization.
 
     Returns:
         The radar cross section.
@@ -48,8 +49,8 @@ def refl(scatterer, h_pol=True):
 
     Args:
         scatterer: a Scatterer instance.
-        h_pol: If true (default), use horizontal polarization.
-        If false, use vertical polarization.
+        h_pol: If True (default), use horizontal polarization.
+        If False, use vertical polarization.
 
     Returns:
         The reflectivity.

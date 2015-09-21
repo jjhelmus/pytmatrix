@@ -21,14 +21,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import unittest
 import numpy as np
-from ..tmatrix import TMatrix, Scatterer
-from ..tmatrix_psd import TMatrixPSD
-from .. import orientation
-from .. import radar
-from .. import refractive
-from .. import tmatrix_aux
-from .. import psd
-from .. import scatter
+from pytmatrix.tmatrix import TMatrix, Scatterer
+from pytmatrix.tmatrix_psd import TMatrixPSD
+from pytmatrix import orientation
+from pytmatrix import radar
+from pytmatrix import refractive
+from pytmatrix import tmatrix_aux
+from pytmatrix import psd
+from pytmatrix import scatter
 
 
 #some allowance for rounding errors etc
@@ -62,10 +62,10 @@ def test_backend():
     scatterer.alpha = 145.0
     scatterer.beta = 52.0
         
-    print "Amplitude matrix S:"
-    print scatterer.get_S()
-    print "Phase matrix Z:"
-    print scatterer.get_Z()
+    print("Amplitude matrix S:")
+    print(scatterer.get_S())
+    print("Phase matrix Z:")
+    print(scatterer.get_Z())
 
 
 class TMatrixTests(unittest.TestCase):
@@ -280,6 +280,51 @@ class TMatrixTests(unittest.TestCase):
         tm.set_geometry(tmatrix_aux.geom_horiz_forw)
         asym_horiz = scatter.asym(tm)
         test_less(self, abs(asym_horiz), 1e-8)
+
+
+    def test_against_mie(self):
+        """Test scattering parameters against Mie results
+        """
+        # Reference values computed with the Mie code of Maetzler
+        sca_xsect_ref = 4.4471684294079958
+        ext_xsect_ref = 7.8419745883848435
+        asym_ref = 0.76146646088675629
+
+        sca = Scatterer(wavelength=1, radius=1, m=complex(3.0,0.5))
+        sca_xsect = scatter.sca_xsect(sca)
+        ext_xsect = scatter.ext_xsect(sca)
+        asym = scatter.asym(sca)
+
+        test_less(self, abs(1-sca_xsect/sca_xsect_ref), 1e-6)
+        test_less(self, abs(1-ext_xsect/ext_xsect_ref), 1e-6)
+        test_less(self, abs(1-asym/asym_ref), 1e-6)
+
+
+    def test_integrated_x_sca(self):
+        """Test Rayleigh scattering cross section integrated over sizes.
+        """
+
+        m = complex(3.0,0.5)
+        K = (m**2-1)/(m**2+2)
+        N0 = 10
+        Lambda = 1e4
+
+        sca = Scatterer(wavelength=1, m=m)
+        sca.psd_integrator = psd.PSDIntegrator()        
+        sca.psd = psd.ExponentialPSD(N0=N0, Lambda=Lambda)
+        sca.psd.D_max = 0.002
+        sca.psd_integrator.D_max = sca.psd.D_max
+        # 256 is quite low, but we want to run the test reasonably fast
+        sca.psd_integrator.num_points = 256
+        sca.psd_integrator.init_scatter_table(sca, angular_integration=True)
+
+        # This size-integrated scattering cross section has an analytical value.
+        # Check that we can reproduce it.
+        sca_xsect_ref = 480*N0*np.pi**5*abs(K)**2/Lambda**7
+        sca_xsect = scatter.sca_xsect(sca)
+        test_less(self, abs(1-sca_xsect/sca_xsect_ref), 1e-3)
+
+
 
 
 def test_relative(tests, x, x_ref, limit=epsilon):

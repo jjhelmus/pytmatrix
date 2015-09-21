@@ -1,5 +1,6 @@
 """
-Copyright (C) 2009-2013 Jussi Leinonen
+Copyright (C) 2009-2015 Jussi Leinonen, Finnish Meteorological Institute, 
+California Institute of Technology
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 #current version
-VERSION = "0.2.1"
+VERSION = "0.3.0"
 
 #typical wavelengths [mm] at different bands
 wl_S = 111.0
@@ -48,10 +49,10 @@ def dsr_thurai_2007(D_eq):
     Drop shape relationship function from Thurai2007
     (http://dx.doi.org/10.1175/JTECH2051.1) paper.
     Arguments:
-        D_eq: Drop volume-equivalent diameter
+        D_eq: Drop volume-equivalent diameter (mm)
 
     Returns:
-        r: The vertical to horizontal drop axis ratio. Note: the Scatterer class 
+        r: The vertical-to-horizontal drop axis ratio. Note: the Scatterer class
         expects horizontal to vertical, so you should pass 1/dsr_thurai_2007
     """
 
@@ -70,9 +71,9 @@ def dsr_pb(D_eq):
     Pruppacher and Beard drop shape relationship function.
 
     Arguments:
-        D_eq: Drop volume-equivalent diameter
+        D_eq: Drop volume-equivalent diameter (mm)
     Returns:
-        r: The vertical to horizontal drop axis ratio. Note: the Scatterer class 
+        r: The vertical-to-horizontal drop axis ratio. Note: the Scatterer class
         expects horizontal to vertical, so you should pass 1/dsr_pb
     """
     return 1.03-0.062*D_eq
@@ -82,9 +83,9 @@ def dsr_bc(D_eq):
     """
     Beard and Chuang drop shape relationship function.
     Arguments:
-        D_eq: Drop volume-equivalent diameter
+        D_eq: Drop volume-equivalent diameter (mm)
     Returns:
-        r: The vertical to horizontal drop axis ratio. Note: the Scatterer class 
+        r: The vertical-to-horizontal drop axis ratio. Note: the Scatterer class
         expects horizontal to vertical, so you should pass 1/dsr_bc
     """
 

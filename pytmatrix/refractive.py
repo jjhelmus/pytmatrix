@@ -1,5 +1,6 @@
 """
-Copyright (C) 2009-2013 Jussi Leinonen
+Copyright (C) 2009-2015 Jussi Leinonen, Finnish Meteorological Institute, 
+California Institute of Technology
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from os import path
 import numpy as np
 from scipy import interpolate
-from tmatrix_aux import wl_S, wl_C, wl_X, wl_Ku, wl_Ka, wl_W
+from pytmatrix.tmatrix_aux import wl_S, wl_C, wl_X, wl_Ku, wl_Ka, wl_W
 
 
 def mg_refractive(m, mix):

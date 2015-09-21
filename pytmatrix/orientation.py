@@ -1,5 +1,6 @@
 """
-Copyright (C) 2009-2013 Jussi Leinonen
+Copyright (C) 2009-2015 Jussi Leinonen, Finnish Meteorological Institute, 
+California Institute of Technology
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -23,7 +24,7 @@ import numpy as np
 from scipy.integrate import quad, dblquad
 
 
-def gaussian_pdf(std=10.0):
+def gaussian_pdf(std=10.0, mean=0.0):
     """Gaussian PDF for orientation averaging.
 
     Args:
@@ -37,7 +38,7 @@ def gaussian_pdf(std=10.0):
     """
     norm_const = 1.0
     def pdf(x):
-        return norm_const*np.exp(-0.5 * (x/std)**2) * \
+        return norm_const*np.exp(-0.5 * ((x-mean)/std)**2) * \
             np.sin(np.pi/180.0 * x)
     norm_dev = quad(pdf, 0.0, 180.0)[0]
     # ensure that the integral over the distribution equals 1
