@@ -8,14 +8,14 @@ environment:
 
   matrix:
     - PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "32"
+      PYTHON_ARCH: "64"
 
 # Test only two environments to speed up CI time
 #      PYTHON_VERSION: "3.4"
 #      PYTHON_ARCH: "32"
 
-      PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "64"
+#      PYTHON_VERSION: "2.7"
+#      PYTHON_ARCH: "64"
 
 #    - PYTHON_VERSION: "3.4"
 #      PYTHON_ARCH: "64"
@@ -47,7 +47,7 @@ install:
   #        7z x -oC:\ mw64.7z | out-null;
   #      }
 
-
+  - ps: - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S gcc git make"
 
   # DEBUGGING
   #- "SET PATH"
