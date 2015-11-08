@@ -53,7 +53,7 @@ install:
   - "conda list"
 
   # build pytmatrix
-  - "%CMD_IN_ENV% python setup.py build_ext --fcompiler=gnu95 --compiler=ming32"
+  - "%CMD_IN_ENV% python setup.py build_ext --fcompiler=gfortran "
 
 build: false
 
