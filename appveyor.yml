@@ -54,7 +54,7 @@ install:
 
   # build pytmatrix
   - "%CMD_IN_ENV% python setup.py config_fc --fcompiler=gnu95 build -static-libgfortran -static-libgcc"
-
+ 
 build: false
 
 test_script:
