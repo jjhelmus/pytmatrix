@@ -44,7 +44,7 @@ install:
   - "activate matrix_env"
 
   # Install PyTMatrix dependecies
-  - "conda install -y -q numpy scipy netcdf4 nose "
+  - "conda install -y -q numpy scipy nose "
 
   # Check that we have the expected version and architecture for Python
   # in the conda environment
@@ -53,7 +53,7 @@ install:
   - "conda list"
 
   # build pytmatrix
-  - "python setup.py build_ext -i"
+  - "%CMD_IN_ENV% python setup.py build_ext -i"
 
 build: false
 
