@@ -47,7 +47,7 @@ install:
   #        7z x -oC:\ mw64.7z | out-null;
   #      }
 
-  - ps: - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S gcc git make"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S gcc git make"
 
   # DEBUGGING
   #- "SET PATH"
