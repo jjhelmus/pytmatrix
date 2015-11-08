@@ -21,7 +21,7 @@ environment:
 #      PYTHON_ARCH: "64"
 
 install:
-    SET PATH=C:\mingw64\bin;%PATH%
+    #SET PATH=C:\mingw64\bin;%PATH%
     #Use the pre-installed Miniconda for the desired arch
     - ps: if($env:PYTHON_ARCH -eq '32') {
           $env:path="C:\Miniconda;C:\Miniconda\Scripts;C:Miniconda\Library\bin;$($env:path)"
