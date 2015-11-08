@@ -61,6 +61,7 @@ def configuration(parent_package='',top_path=None):
         sources=['pytmatrix/fortran_tm/pytmatrix.pyf',
             'pytmatrix/fortran_tm/ampld.lp.f',
             'pytmatrix/fortran_tm/lpd.f'],
+        extra_compile_args=['-lgfortran',],
         **kw)
 
     return config
