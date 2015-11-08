@@ -14,8 +14,8 @@ environment:
 #      PYTHON_VERSION: "3.4"
 #      PYTHON_ARCH: "32"
 
-#      PYTHON_VERSION: "2.7"
-#      PYTHON_ARCH: "64"
+      PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "64"
 
 #    - PYTHON_VERSION: "3.4"
 #      PYTHON_ARCH: "64"
@@ -24,10 +24,10 @@ install:
     #SET PATH=C:\mingw64\bin;%PATH%
     #Use the pre-installed Miniconda for the desired arch
   - ps: if($env:PYTHON_ARCH -eq '32') {
-      $env:path="C:\mingw\bin;C:\Miniconda;C:\Miniconda\Scripts;C:Miniconda\Library\bin;$($env:path)"
+      $env:path="C:\msys64\mingw\bin;C:\Miniconda;C:\Miniconda\Scripts;C:Miniconda\Library\bin;$($env:path)"
       }
       else {
-          $env:path="c:\mingw64\bin;C:\Miniconda-x64;C:\Miniconda-x64\Scripts;C:Miniconda-x64\Library\bin;$($env:path)"
+          $env:path="C:\msys64\mingw64\bin;C:\Miniconda-x64;C:\Miniconda-x64\Scripts;C:Miniconda-x64\Library\bin;$($env:path)"
       }
   #
   #- ps: if($env:tbs_arch -eq 'x64') {
