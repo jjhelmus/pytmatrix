@@ -53,7 +53,7 @@ install:
   - "conda list"
 
   # build pytmatrix
-  - "%CMD_IN_ENV% python setup.py config_fc --fcompiler=gnu95 build "
+  - "%CMD_IN_ENV% python setup.py config_fc --fcompiler=gnu95 --f77flags=-static build "
  
 build: false
 
